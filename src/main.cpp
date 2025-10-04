@@ -9,12 +9,12 @@ const u8_t u8_FullPowerPin = 6;
 const u32_t u32_PwmFreq = 3500; // PWM frequency in Hz
 const u8_t u8_PwmResolution = 10; // 10-bit resolution (0-1023)
 
-// Variables
+u32_t u32_LoopCntr = 0; 
 u16_t u16_PotValue = 0;
 u32_t u32_PwmVal = 0;
 
 float af32_potValInX[]  = { 0, 500,  1000,  1500,  2000,  2500,  3000,  3500, 4096 };
-float af32_PwmOutY[]    = { 0,  30,    60,    90,   120,   150,   180,   210,  255 };
+float af32_PwmOutY[]    = { 0, 150,   300,   450,   600,   750,   900,   950,  1023 };
 u8_t u8_MapSize = 9;
 
 
@@ -28,10 +28,13 @@ void setup() {
   pinMode(u8_potPin, INPUT);
 
   // Initialize serial for debugging
-  // Serial.begin(115200);
+  Serial.begin(115200);
 }
 
 void loop() {
+
+  u32_LoopCntr++;
+  
   // Read potentiometer value (0-4095 for ESP32 ADC)
   u16_PotValue = analogRead(u8_potPin);
   
@@ -39,7 +42,7 @@ void loop() {
   u32_PwmVal = (u32_t)multiMap<float>((float)u16_PotValue, af32_potValInX, af32_PwmOutY, u8_MapSize);
 
   // Map potentiometer value to PWM duty cycle (0-255)
-  u32_PwmVal = map(u16_PotValue, 0, 4095, 0, 1023);
+  //u32_PwmVal = map(u16_PotValue, 0, 4095, 0, 1023);
   
   // Set PWM duty cycle
   ledcWrite(u8_PwmPin, u32_PwmVal);
@@ -51,12 +54,15 @@ void loop() {
     digitalWrite(u8_FullPowerPin, LOW);  // Full power OFF
   } 
 
-  // Print values for debugging
-  // Serial.print("Potentiometer: ");
-  // Serial.print(u16_PotValue);
-  // Serial.print(" | PWM Value: ");
-  // Serial.println(u32_PwmVal);
-  
+
+  if (0 == (u32_LoopCntr % 16)) { 
+    u32_LoopCntr = 0;
+    // Debug output 
+    Serial.print("Potentiometer: ");
+    Serial.print(u16_PotValue);
+    Serial.print(" | PWM Value: ");
+    Serial.println(u32_PwmVal);
+  }
   // Small delay for stability
   delay(100);
 }
