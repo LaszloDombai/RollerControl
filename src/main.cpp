@@ -1,26 +1,31 @@
 #include <Arduino.h>
+#include "MultiMap.h"
 
 // Define pins
-const int potPin = A0;    // Potentiometer connected to GPIO34 (ADC1_CH6)
-const int pwmPin = 5;    
-const int fullPowerPin = 6;
+const u8_t u8_potPin = A0;    // Potentiometer connected to GPIO34 (ADC1_CH6)
+const u8_t u8_PwmPin = 5;    
+const u8_t u8_FullPowerPin = 6;
 // PWM settings
-const int pwmFreq = 3500; // PWM frequency in Hz
-const int pwmResolution = 10; // 10-bit resolution (0-1023)
+const u32_t u32_PwmFreq = 3500; // PWM frequency in Hz
+const u8_t u8_PwmResolution = 10; // 10-bit resolution (0-1023)
 
 // Variables
-int potValue = 0;
-int pwmValue = 0;
+u16_t u16_PotValue = 0;
+u32_t u32_PwmVal = 0;
+
+float af32_potValInX[]  = { 0, 500,  1000,  1500,  2000,  2500,  3000,  3500, 4096 };
+float af32_PwmOutY[]    = { 0,  30,    60,    90,   120,   150,   180,   210,  255 };
+u8_t u8_MapSize = 9;
 
 
 void setup() {
   // Configure PWM
-  ledcAttach(pwmPin, pwmFreq, pwmResolution);
+  ledcAttach(u8_PwmPin, u32_PwmFreq, u8_PwmResolution);
   // Set full power pin as output
-  pinMode(fullPowerPin, OUTPUT);
-  digitalWrite(fullPowerPin, LOW); // Ensure full power is off initially
+  pinMode(u8_FullPowerPin, OUTPUT);
+  digitalWrite(u8_FullPowerPin, LOW); // Ensure full power is off initially
   // Set potentiometer pin as input    
-  pinMode(potPin, INPUT);
+  pinMode(u8_potPin, INPUT);
 
   // Initialize serial for debugging
   // Serial.begin(115200);
@@ -28,26 +33,29 @@ void setup() {
 
 void loop() {
   // Read potentiometer value (0-4095 for ESP32 ADC)
-  potValue = analogRead(potPin);
+  u16_PotValue = analogRead(u8_potPin);
   
+
+  u32_PwmVal = (u32_t)multiMap<float>((float)u16_PotValue, af32_potValInX, af32_PwmOutY, u8_MapSize);
+
   // Map potentiometer value to PWM duty cycle (0-255)
-  pwmValue = map(potValue, 0, 4095, 0, 1023);
+  u32_PwmVal = map(u16_PotValue, 0, 4095, 0, 1023);
   
   // Set PWM duty cycle
-  ledcWrite(pwmPin, pwmValue);
+  ledcWrite(u8_PwmPin, u32_PwmVal);
   
   // Set full power pin based on potentiometer value
-  if (potValue > 3800) { 
-    digitalWrite(fullPowerPin, HIGH); // Full power ON
+  if (u16_PotValue > 3800) { 
+    digitalWrite(u8_FullPowerPin, HIGH); // Full power ON
   } else {
-    digitalWrite(fullPowerPin, LOW);  // Full power OFF
+    digitalWrite(u8_FullPowerPin, LOW);  // Full power OFF
   } 
 
   // Print values for debugging
   // Serial.print("Potentiometer: ");
-  // Serial.print(potValue);
+  // Serial.print(u16_PotValue);
   // Serial.print(" | PWM Value: ");
-  // Serial.println(pwmValue);
+  // Serial.println(u32_PwmVal);
   
   // Small delay for stability
   delay(100);
