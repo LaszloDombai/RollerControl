@@ -29,7 +29,7 @@ void setup()
   pinMode(u8_potPin, INPUT);
 
   // Initialize serial for debugging
-  Serial.begin(115200);
+  // Serial.begin(115200);
 }
 
 void loop()
@@ -61,15 +61,15 @@ void loop()
 
   digitalWrite(u8_FullPowerPin, u8_FullPowerOn);
 
-  if (0 == (u32_LoopCntr % 16))
-  {
-    u32_LoopCntr = 0;
-    // Debug output
-    Serial.print("Potentiometer: ");
-    Serial.print(u16_PotValue);
-    Serial.print(" | PWM Value: ");
-    Serial.println(u32_PwmVal);
-  }
+  // if (0 == (u32_LoopCntr % 16))
+  // {
+  //   u32_LoopCntr = 0;
+  //   // Debug output
+  //   Serial.print("Potentiometer: ");
+  //   Serial.print(u16_PotValue);
+  //   Serial.print(" | PWM Value: ");
+  //   Serial.println(u32_PwmVal);
+  // }
   // Small delay for stability
   delay(100);
 }
