@@ -1,7 +1,31 @@
-af32_potValInX = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4096];
-af32_PwmOutY = [0, 50, 100, 200, 300, 400, 500, 750, 1023];
+bdclose all;
+clear all;
 
-plot(af32_potValInX, af32_PwmOutY);
+NofElements = 8;
+HallSaxLow = 1000;
+HallSaxHigh = 3050;
+
+
+HallSax = HallSaxLow:(HallSaxHigh-HallSaxLow)/(NofElements-1):HallSaxHigh; 
+fprintf('float af32_HallSensorSax[] = {');
+fprintf('%.0f, ', HallSax); 
+fprintf('};\n');
+
+PwmOutCrv = 0:1023/(NofElements-1):1023; 
+PwmOutCrvPower = PwmOutCrv;
+PwmOutCrv = sort(PwmOutCrv,'descend'); 
+fprintf('float af32_PwmOutCrv[] = {');
+fprintf('%.0f, ', PwmOutCrv); 
+fprintf('};\n');
+
+plot(HallSax, PwmOutCrv);
+hold;
+plot(HallSax, PwmOutCrvPower, 'r');
 grid on;
-xlabel('Potmeter');
+xlabel('Hall Sensor');
 ylabel('PWM value');
+
+legend('ESP PWM','Real power');
+
+% float af32_HallSensorSax[] = {1000, 1293, 1586, 1879, 2171, 2464, 2757, 3050 };
+% float af32_PwmOutCrv[] = {1023, 877, 731, 585, 438, 292, 146, 0 };

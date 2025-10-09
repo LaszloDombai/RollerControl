@@ -2,7 +2,7 @@
 #include "MultiMap.h"
 
 // Define pins
-const u8_t u8_potPin = A0; // Potentiometer connected to GPIO34 (ADC1_CH6)
+const u8_t u8_HallPin = A0; // Potentiometer connected to GPIO34 (ADC1_CH6)
 const u8_t u8_PwmPin = 5;
 const u8_t u8_FullPowerPin = 6;
 // PWM settings
@@ -11,12 +11,20 @@ const u8_t u8_PwmResolution = 10; // 10-bit resolution (0-1023)
 
 u8_t u8_FullPowerOn = 0;
 u32_t u32_LoopCntr = 0;
-u16_t u16_PotValue = 0;
+u16_t u16_HallValue = 0;
 u32_t u32_PwmVal = 0;
 
-float af32_potValInX[] = {0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4096};
-float af32_PwmOutY[] = {0, 50, 100, 200, 300, 400, 500, 750, 1023};
-u8_t u8_MapSize = 9;
+/* Hall sensor */
+// Low = 765 mV
+// High = 2.4 V
+// Vcc = 3.15 V
+// AD_low = 765 * 4096 / 3.15 = 994
+// AD_high = 2400 * 4096 / 3.15 = 3120
+
+float af32_HallSensorSax[] = {1000, 1293, 1586, 1879, 2171, 2464, 2757, 3050};
+float af32_PwmOutCrv[] = {1023, 877, 731, 585, 438, 292, 146, 0};
+
+u8_t u8_CrvSize = 8;
 
 void setup()
 {
@@ -26,7 +34,7 @@ void setup()
   pinMode(u8_FullPowerPin, OUTPUT);
   digitalWrite(u8_FullPowerPin, LOW); // Ensure full power is off initially
   // Set potentiometer pin as input
-  pinMode(u8_potPin, INPUT);
+  pinMode(u8_HallPin, INPUT);
 
   // Initialize serial for debugging
   // Serial.begin(115200);
@@ -37,24 +45,19 @@ void loop()
 
   u32_LoopCntr++;
 
-  // Read potentiometer value (0-4095 for ESP32 ADC)
-  u16_PotValue = analogRead(u8_potPin);
+  u16_HallValue = analogRead(u8_HallPin);
 
-  u32_PwmVal = (u32_t)multiMap<float>((float)u16_PotValue, af32_potValInX, af32_PwmOutY, u8_MapSize);
+  u32_PwmVal = (u32_t)multiMap<float>((float)u16_HallValue, af32_HallSensorSax, af32_PwmOutCrv, u8_CrvSize);
 
-  // Map potentiometer value to PWM duty cycle (0-255)
-  // u32_PwmVal = map(u16_PotValue, 0, 4095, 0, 1023);
-
-  // Set PWM duty cycle
   ledcWrite(u8_PwmPin, u32_PwmVal);
 
   // Set full power pin applying a hysteresis
-  if (u16_PotValue < 200)
+  if (u32_PwmVal < 15)
   {
     u8_FullPowerOn = 1;
   }
 
-  if (u16_PotValue > 350)
+  if (u16_HallValue > 25)
   {
     u8_FullPowerOn = 0;
   }
@@ -66,7 +69,7 @@ void loop()
   //   u32_LoopCntr = 0;
   //   // Debug output
   //   Serial.print("Potentiometer: ");
-  //   Serial.print(u16_PotValue);
+  //   Serial.print(u16_HallValue);
   //   Serial.print(" | PWM Value: ");
   //   Serial.println(u32_PwmVal);
   // }
