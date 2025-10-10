@@ -1,3 +1,4 @@
+close('all','force');
 bdclose all;
 clear all;
 
