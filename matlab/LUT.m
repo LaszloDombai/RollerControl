@@ -1,3 +1,4 @@
+close('all','force');
 bdclose all;
 clear all;
 
@@ -11,9 +12,9 @@ fprintf('float af32_HallSensorSax[] = {');
 fprintf('%.0f, ', HallSax); 
 fprintf('};\n');
 
-PwmOutCrv = 0:1023/(NofElements-1):1023; 
-PwmOutCrvPower = PwmOutCrv;
-PwmOutCrv = sort(PwmOutCrv,'descend'); 
+PwmOutCrvPower = 0:1023/(NofElements-1):1023; 
+
+PwmOutCrv = sort(PwmOutCrvPower,'descend'); 
 fprintf('float af32_PwmOutCrv[] = {');
 fprintf('%.0f, ', PwmOutCrv); 
 fprintf('};\n');
